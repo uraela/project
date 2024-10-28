@@ -16,7 +16,7 @@ def scraper(user_message):
     options = webdriver.ChromeOptions()
 
     # run the browser in headless mode
-    options.add_argument("--headless=new")
+    #options.add_argument("--headless=new")
 
     # instantiate Chrome WebDriver with options
     driver = webdriver.Chrome(options=options)
