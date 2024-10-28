@@ -5,6 +5,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.options import Options
+from helper_functions import llm
 
 import time
 import requests
@@ -44,9 +46,27 @@ def scraper(user_message):
         if "https://www.myskillsfuture.gov.sg/content/portal/en/training-exchange/course-directory/course-detail.html?" in elem.get_attribute("href"):
             links.append(elem.get_attribute("href"))
     #print (links)
-    return links[:2]
+    return links[:3]
     #close the browser
     driver.quit()
+
+
+def load_html(url):
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run headless if you don't need to see the browser
+    driver = webdriver.Chrome(options=chrome_options)
+
+    html_raw = None
+    
+    try:
+        driver.get(url)
+        time.sleep(5)
+        html_raw = driver.page_source
+    finally:
+        driver.quit()
+    
+    return html_raw
+
 
 CONTENT_KEYS = {
     "title": "courseTitle",
@@ -59,26 +79,72 @@ CONTENT_KEYS = {
     "training_duration": "totalTrainingDurationHour",
 }
 
-def get_course_info(links):
-    for link in links:
-        url = link
-        response = requests.get(url)
-        html = response.text
-        #print(html)
-        soup = bs4.BeautifulSoup(html, 'html.parser')
+def get_course_info(urls):
+    infos = []
+    for url in urls:
+        html_raw = load_html(url)
+
+        soup = bs4.BeautifulSoup(html_raw, 'html.parser')
         info = {}
-        
         for k, v in CONTENT_KEYS.items():
             elements = soup.find_all(attrs={"data-bind": lambda x: x and f"courseDetail.{v}" in x})
             if len(elements) == 0:
                 continue
             
             info[k] = elements[0].get_text()
+        infos.append(info) 
 
-        return info
-    print("test")
-    print(get_course_info(links))
+    return infos
+        
+#url = "https://www.myskillsfuture.gov.sg/content/portal/en/training-exchange/course-directory/course-detail.html?courseReferenceNumber=TGS-2020500290"
+#info = get_course_info(url)
+#print(info)
+
+def generate_response(info):
+
+    delimiter = "####"
+
+    system_message = f"""
+    You are Ms Piggy and very ethusiastic about life. Say something uplifting in 5 words.
+
+    Step 1:{delimiter} All available courses are shown in the dictionary array below:
+    {info}
+
+    Step 2:{delimiter} Summarise information about the courses. \
+    You must only rely on the facts or information in the dictionary array.\
+
+    Step 3:{delimiter}: Answer the customer in a encouraging tone.\
+    Make sure the statements are factually accurate and concise.\
+    Complete with details such as title, provider, price and skills to be learnt.\
+    Use Neural Linguistic Programming to construct your response.
+
+    {delimiter}Step 4:{delimiter}: Provide the map coordinates of all the different course providers.\
+    Coordinates should all be different. Coordinates elements should be separated by comma only like this: a, b, c, d, e, f, g \
+
+    Use the following format:
+    Step 1:{delimiter} <step 1 reasoning>
+    Step 2:{delimiter} <step 2 reasoning>
+    Step 3:{delimiter} <step 3 response to customer>
+    {delimiter}Step 4:{delimiter} <step 4 rxtract coordinates>
+
+    Make sure to include {delimiter} to separate every step.
+    """
+
+    messages =  [
+        {'role':'system',
+         'content': system_message},
+        # {'role':'user',
+        #  'content': f"{delimiter}{user_message}{delimiter}"},
+    ]
+
+    response_to_customer = llm.get_completion_by_messages(messages)  
+    coord = response_to_customer.split(delimiter)[-1] 
+    response_to_customer= response_to_customer.split(delimiter)[-3]  
+    print ("coord:" + coord)
+    return response_to_customer, coord   
 
 def reply (user_message):
     links = scraper(user_message)
-    get_course_info(links)
+    info = get_course_info(links)
+    reply =  generate_response(info)
+    return reply

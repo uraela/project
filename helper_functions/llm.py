@@ -2,11 +2,16 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 import tiktoken
+import streamlit as st
 
-load_dotenv('.env')
+if load_dotenv('.env'):
+   # for local development
+   OPENAI_KEY = os.getenv('OPENAI_API_KEY')
+else:
+   OPENAI_KEY = st.secrets['OPENAI_API_KEY']
 
 # Pass the API Key to the OpenAI Client
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client = OpenAI(api_key=OPENAI_KEY)
 
 def get_embedding(input, model='text-embedding-3-small'):
     response = client.embeddings.create(
@@ -44,6 +49,7 @@ def get_completion_by_messages(messages, model="gpt-4o-mini", temperature=0, top
         max_tokens=max_tokens,
         n=1
     )
+    print (response.choices[0].message.content)
     return response.choices[0].message.content
 
 # This function is for calculating the tokens given the "message"
