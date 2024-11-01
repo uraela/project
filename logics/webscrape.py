@@ -13,14 +13,14 @@ import requests
     
 def scraper(user_message):
     # instantiate options for Chrome
-    options = webdriver.ChromeOptions()
+    #options = webdriver.ChromeOptions()
+    chrome_options = Options()
 
     # run the browser in headless mode
-    #options.add_argument("--headless=new")
+    options.add_argument("--headless=new")
 
     # instantiate Chrome WebDriver with options
-    driver = webdriver.Chrome(options=options)
-
+    driver = webdriver.Chrome(options=chrome_options)
     # open the specified URL in the browser
     url = 'https://www.myskillsfuture.gov.sg/content/portal/en/portal-search/portal-search.html'
     driver.get(url)
