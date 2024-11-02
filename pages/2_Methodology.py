@@ -11,9 +11,10 @@ st.text("""\n
         4.  Another Scraper function is called to extract details from\n
             course details page\n
         5.  Details are provided in prompt to LLM\n
-        6.  LLM outputs summary of case details and shows address of \n
-            course provider on map\n
-        7.  Separately, user can check out the job vacancies trend\n
+        6.  LLM outputs summary of case details and course provider\n
+        7.  Map coordinates of course provider is retrieved from json file\n
+            from skillsfuture @ https://data.gov.sg/datasets?agencies=SkillsFuture+Singapore+(SSG)&page=1&resultId=d_563451336616abdf5b2c36472c2afd8b
+        8.  Separately, user can check out the job vacancies trend\n
             and get some info about expected salaries from a link\n
             to Straits Times. 
         """)
