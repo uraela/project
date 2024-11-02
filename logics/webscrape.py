@@ -1,5 +1,7 @@
 import bs4
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -16,13 +18,15 @@ import json
 def scraper(user_message):
     # instantiate options for Chrome
     #options = webdriver.ChromeOptions()
-    chrome_options = Options()
+    chrome_options = webdriver.ChromeOptions()
 
     # run the browser in headless mode
-    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-dev-shm-usage')
 
     # instantiate Chrome WebDriver with options
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     # open the specified URL in the browser
     url = 'https://www.myskillsfuture.gov.sg/content/portal/en/portal-search/portal-search.html'
     driver.get(url)
@@ -54,9 +58,11 @@ def scraper(user_message):
 
 
 def load_html(url):
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run headless if you don't need to see the browser
-    driver = webdriver.Chrome(options=chrome_options)
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
     html_raw = None
     
@@ -115,12 +121,12 @@ def generate_response(info):
     {info}
 
     Step 2:{delimiter} Summarise information about the courses. Label each course as C1, C2, etc\
-    You must only rely on the facts or information in the dictionary array.\
+    You must only rely on the facts or information in the dictionary array. Provide 3 courses.\
 
     Step 3:{delimiter}: Answer the customer in an encouraging tone. Mention course label.\
     Make sure the statements are factually accurate and concise.\
     Complete with details such as title, provider, price and skills to be learnt.\
-    Use Neural Linguistic Programming to construct your response. Use the same font.\
+    Use Neural Linguistic Programming to construct your response. Use the same font and color.\
 
     {delimiter}Step 4:{delimiter}: Provide the map coordinates of all course providers.\
     Be factual, different course providers have different coordinates.\
@@ -132,9 +138,8 @@ def generate_response(info):
     Step 3:{delimiter} <step 3 response to customer>
     {delimiter}Step 4:{delimiter} <step 4 extract coordinates>
 
-    Make sure to include {delimiter} to separate every step.
+    Make sure to include {delimiter} according to format.
     """
-
     messages =  [
         {'role':'system',
          'content': system_message},
@@ -181,8 +186,9 @@ def reply (user_message):
         if coord:
             coords.append([coord[0],coord[1]])
         else:
-            coords.append([chatgpt_coord[i][0], chatgpt_coord[i][1]])              
-            i=i+1  
-            print (i)
+            if chatgpt_coord[i][0]:
+                coords.append([chatgpt_coord[i][0], chatgpt_coord[i][1]])              
+                i=i+1  
+                print (i)
     print(coords)
     return reply, coords
