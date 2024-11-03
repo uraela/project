@@ -24,9 +24,9 @@ def scraper(user_message):
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-dev-shm-usage')
-
+    driver = webdriver.Chrome(options=chrome_options)
     # instantiate Chrome WebDriver with options
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     # open the specified URL in the browser
     url = 'https://www.myskillsfuture.gov.sg/content/portal/en/portal-search/portal-search.html'
     driver.get(url)
@@ -62,7 +62,8 @@ def load_html(url):
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    driver = webdriver.Chrome(options=chrome_options)
+    #driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
     html_raw = None
     
